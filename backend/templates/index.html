@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Recommendation System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Food Recommendation System</h1>
+    
+    <h2>Add Restaurant</h2>
+    <form id="addRestaurantForm">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br>
+        <label for="location">Location:</label>
+        <input type="text" id="location" name="location" required><br>
+        <label for="openingHours">Opening Hours:</label>
+        <input type="text" id="openingHours" name="openingHours"><br>
+        <label for="contactInfo">Contact Info:</label>
+        <input type="text" id="contactInfo" name="contactInfo"><br>
+        <button type="submit">Add Restaurant</button>
+    </form>
+    
+    <h2>Restaurant List</h2>
+    <ul id="restaurants"></ul>
+
+    <script>
+        document.getElementById('addRestaurantForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = {
+                Name: formData.get('name'),
+                Location: formData.get('location'),
+                OpeningHours: formData.get('openingHours'),
+                ContactInfo: formData.get('contactInfo')
+            };
+            fetch('/add_restaurant', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                loadRestaurants();
+                event.target.reset();
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        });
+
+        function loadRestaurants() {
+            fetch('/restaurants')
+                .then(response => response.json())
+                .then(data => {
+                    const restaurantList = document.getElementById('restaurants');
+                    restaurantList.innerHTML = '';
+                    data.forEach(restaurant => {
+                        const li = document.createElement('li');
+                        li.textContent = `${restaurant.Name} - ${restaurant.Location}`;
+                        const deleteButton = document.createElement('button');
+                        deleteButton.textContent = 'Delete';
+                        deleteButton.addEventListener('click', () => {
+                            deleteRestaurant(restaurant.RestaurantID);
+                        });
+                        li.appendChild(deleteButton);
+                        restaurantList.appendChild(li);
+                    });
+                });
+        }
+
+        function deleteRestaurant(restaurantId) {
+            fetch(`/delete_restaurant/${restaurantId}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                loadRestaurants();
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRestaurants();
+        });
+    </script>
+</body>
+</html>
