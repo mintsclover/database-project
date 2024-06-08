@@ -8,6 +8,13 @@
 </head>
 <body>
     <h1>Food Recommendation System</h1>
+    {% if user %}
+        <p>Welcome, {{ user.Name }}!</p>
+        <a href="{{ url_for('logout') }}">Logout</a>
+    {% else %}
+        <a href="{{ url_for('login') }}">Login</a>
+        <a href="{{ url_for('register') }}">Register</a>
+    {% endif %}
     
     <h2>Add Restaurant</h2>
     <form id="addRestaurantForm">

@@ -1,10 +1,10 @@
-from flask import Flask, jsonify, request, render_template
-from database import db
-from models import Restaurant, Menu, User, Review, TodayMenu
+from flask import Flask, jsonify, request, render_template, redirect, url_for, session
+from models import db, Restaurant, Menu, User, Review, TodayMenu
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.sqlite'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = 'your_secret_key'  # 세션 암호화를 위한 비밀 키 설정
 db.init_app(app)
 
 # 데이터베이스 초기화 여부를 추적하는 플래그
@@ -19,7 +19,46 @@ def initialize_db():
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    user = User.query.get(session['user_id'])
+    return render_template('index.html', user=user)
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        user_id = request.form['id']
+        name = request.form['name']
+        preferred_category = request.form['preferred_category']
+        
+        if User.query.filter_by(UserID=user_id).first():
+            return 'ID already exists!'
+
+        new_user = User(UserID=user_id, Name=name, PreferredCategory=preferred_category)
+        db.session.add(new_user)
+        db.session.commit()
+        
+        return redirect(url_for('login'))
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        user_id = request.form['id']
+        user = User.query.filter_by(UserID=user_id).first()
+        
+        if user is None:
+            return 'Invalid ID!'
+        
+        session['user_id'] = user.UserID
+        return redirect(url_for('index'))
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    return redirect(url_for('login'))
 
 @app.route('/restaurants', methods=['GET'])
 def get_restaurants():
