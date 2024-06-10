@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request, render_template, redirect, url_for, s
 from models import db, Restaurant, Menu, User, Review, TodayMenu
 from datetime import datetime
 from sqlalchemy.sql import func
+import random
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.sqlite'
@@ -108,6 +109,20 @@ def add_review():
     db.session.add(new_review)
     db.session.commit()
     return jsonify(new_review.as_dict()), 201
+
+@app.route('/today_menu', methods=['GET'])
+def get_today_menu():
+    user = User.query.get(session['user_id'])
+    preferred_category = user.PreferredCategory
+    menus = Menu.query.all()
+    preferred_menus = [menu for menu in menus if menu.Category == preferred_category]
+    
+    if random.random() < 0.5 and preferred_menus:
+        selected_menu = random.choice(preferred_menus)
+    else:
+        selected_menu = random.choice(menus)
+    
+    return jsonify(selected_menu.as_dict())
 
 # Helper function to convert SQLAlchemy model instance to dictionary
 def as_dict(model_instance):

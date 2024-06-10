@@ -16,6 +16,10 @@
         <a href="{{ url_for('register') }}">Register</a>
     {% endif %}
     
+    <h2>Today's Menu Recommendation</h2>
+    <p id="todayMenu"></p>
+    <button onclick="loadTodayMenu()">Get Today's Menu</button>
+    
     <h2>Restaurant List</h2>
     <ul id="restaurants"></ul>
 
@@ -99,10 +103,19 @@
                     reviewsList.innerHTML = '';
                     data.reviews.forEach(review => {
                         const li = document.createElement('li');
-                        li.textContent = `Rating: ${review.Rating} - ${review.ReviewText} - Date: ${review.ReviewDate}`;
+                        li.textContent = `Rating: ${review.Rating}, Review: ${review.ReviewText}, Date: ${review.ReviewDate}`;
                         reviewsList.appendChild(li);
                     });
                     menuDetails.style.display = 'block';
+                });
+        }
+
+        function loadTodayMenu() {
+            fetch('/today_menu')
+                .then(response => response.json())
+                .then(data => {
+                    const todayMenu = document.getElementById('todayMenu');
+                    todayMenu.textContent = `Today's Menu: ${data.Name} - ${data.Description}`;
                 });
         }
 
