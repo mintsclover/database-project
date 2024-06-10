@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request, render_template, redirect, url_for, session
 from models import db, Restaurant, Menu, User, Review, TodayMenu
+import datetime
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.sqlite'
@@ -86,6 +87,20 @@ def delete_restaurant(restaurant_id):
     db.session.delete(restaurant)
     db.session.commit()
     return jsonify({'message': 'Restaurant deleted successfully'}), 200
+
+@app.route('/add_review', methods=['POST'])
+def add_review():
+    data = request.json
+    new_review = Review(
+        UserID=session['user_id'],
+        MenuID=data['MenuID'],
+        Rating=data['Rating'],
+        ReviewText=data['ReviewText'],
+        ReviewDate=datetime.now()
+    )
+    db.session.add(new_review)
+    db.session.commit()
+    return jsonify(new_review.as_dict()), 201
 
 # Helper function to convert SQLAlchemy model instance to dictionary
 def as_dict(model_instance):
