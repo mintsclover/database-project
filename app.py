@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, render_template, redirect, url_for, session
 from models import db, Restaurant, Menu, User, Review, TodayMenu
-from datetime import datetime
+from datetime import datetime, date
 from sqlalchemy.sql import func
 import random
 
@@ -114,15 +114,24 @@ def add_review():
 def get_today_menu():
     user = User.query.get(session['user_id'])
     preferred_category = user.PreferredCategory
-    menus = Menu.query.all()
-    preferred_menus = [menu for menu in menus if menu.Category == preferred_category]
     
-    if random.random() < 0.5 and preferred_menus:
-        selected_menu = random.choice(preferred_menus)
+    today = date.today()
+    today_menus = TodayMenu.query.filter_by(Date=today).all()
+    
+    if today_menus:
+        selected_today_menu = random.choice(today_menus)
+        selected_menu = Menu.query.get(selected_today_menu.MenuID)
     else:
-        selected_menu = random.choice(menus)
+        menus = Menu.query.all()
+        preferred_menus = [menu for menu in menus if menu.Category == preferred_category]
+        
+        if random.random() < 0.5 and preferred_menus:
+            selected_menu = random.choice(preferred_menus)
+        else:
+            selected_menu = random.choice(menus)
     
     return jsonify(selected_menu.as_dict())
+
 
 # Helper function to convert SQLAlchemy model instance to dictionary
 def as_dict(model_instance):

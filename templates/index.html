@@ -39,7 +39,14 @@
         <form id="addReviewForm">
             <input type="hidden" id="menuID" name="menuID">
             <label for="rating">Rating:</label>
-            <input type="number" id="rating" name="rating" min="1" max="5" required><br>
+            <input id="rating" type="range" name="rating" min="1" max="5" list="tickmarks" required>
+            <datalist id="tickmarks">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </datalist><br>
             <label for="reviewText">Review Text:</label>
             <textarea id="reviewText" name="reviewText" required></textarea><br>
             <button type="submit">Add Review</button>
@@ -97,15 +104,14 @@
                     const menuDetails = document.getElementById('menuDetails');
                     const menuInfo = document.getElementById('menuInfo');
                     const reviewsList = document.getElementById('reviewsList');
-                    const menuIDInput = document.getElementById('menuID');
-                    menuInfo.textContent = `Name: ${data.menu.Name}, Price: ${data.menu.Price}, Description: ${data.menu.Description}, Category: ${data.menu.Category}`;
-                    menuIDInput.value = data.menu.MenuID;
+                    menuInfo.textContent = `Name: ${data.menu.Name}, Price: ${data.menu.Price}, Description: ${data.menu.Description}`;
                     reviewsList.innerHTML = '';
                     data.reviews.forEach(review => {
                         const li = document.createElement('li');
                         li.textContent = `Rating: ${review.Rating}, Review: ${review.ReviewText}, Date: ${review.ReviewDate}`;
                         reviewsList.appendChild(li);
                     });
+                    document.getElementById('menuID').value = data.menu.MenuID;
                     menuDetails.style.display = 'block';
                 });
         }

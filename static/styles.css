@@ -50,6 +50,11 @@ li {
     border-radius: 5px;
     display: flex;
     justify-content: space-between;
+    cursor: pointer;
+}
+
+li:hover {
+    background: #d4d4d4;
 }
 
 li button {
@@ -58,4 +63,19 @@ li button {
 
 li button:hover {
     background-color: #e53935;
+}
+
+#rating{
+    accent-color:pink;
+    width:400px
+}
+datalist{
+    display: grid;
+    grid-auto-flow: column;
+    width:500px;
+}
+
+#reviewText{
+    width: 100%;
+    height: 300px;
 }
