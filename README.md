@@ -6,7 +6,7 @@
 2024년 1학기 데이터베이스 프로젝트<br>
 2024 Database Project
 
-![lobby img](/food recommendation.jepg)
+<img src="food recommendation.jpeg" width="400px" height="auto">
 
 </div>
 
