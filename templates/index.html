@@ -16,60 +16,95 @@
         <a href="{{ url_for('register') }}">Register</a>
     {% endif %}
     
-    <h2>Add Restaurant</h2>
-    <form id="addRestaurantForm">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" required><br>
-        <label for="location">Location:</label>
-        <input type="text" id="location" name="location" required><br>
-        <label for="openingHours">Opening Hours:</label>
-        <input type="text" id="openingHours" name="openingHours"><br>
-        <label for="contactInfo">Contact Info:</label>
-        <input type="text" id="contactInfo" name="contactInfo"><br>
-        <button type="submit">Add Restaurant</button>
-    </form>
-    
     <h2>Restaurant List</h2>
     <ul id="restaurants"></ul>
 
-    <h2>Add Review</h2>
-    <form id="addReviewForm">
-        <label for="menuID">Menu ID:</label>
-        <input type="text" id="menuID" name="menuID" required><br>
-        <label for="rating">Rating:</label>
-        <input type="number" id="rating" name="rating" min="1" max="5" required><br>
-        <label for="reviewText">Review Text:</label>
-        <textarea id="reviewText" name="reviewText" required></textarea><br>
-        <button type="submit">Add Review</button>
-    </form>
+    <div id="restaurantDetails" style="display:none;">
+        <h2>Restaurant Details</h2>
+        <p id="restaurantInfo"></p>
+        <h3>Menu</h3>
+        <ul id="menuList"></ul>
+    </div>
+
+    <div id="menuDetails" style="display:none;">
+        <h3>Menu Details</h3>
+        <p id="menuInfo"></p>
+        <h4>Reviews</h4>
+        <ul id="reviewsList"></ul>
+        <h4>Add Review</h4>
+        <form id="addReviewForm">
+            <input type="hidden" id="menuID" name="menuID">
+            <label for="rating">Rating:</label>
+            <input type="number" id="rating" name="rating" min="1" max="5" required><br>
+            <label for="reviewText">Review Text:</label>
+            <textarea id="reviewText" name="reviewText" required></textarea><br>
+            <button type="submit">Add Review</button>
+        </form>
+    </div>
 
     <script>
-        document.getElementById('addRestaurantForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const formData = new FormData(event.target);
-            const data = {
-                Name: formData.get('name'),
-                Location: formData.get('location'),
-                OpeningHours: formData.get('openingHours'),
-                ContactInfo: formData.get('contactInfo')
-            };
-            fetch('/add_restaurant', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Success:', data);
-                loadRestaurants();
-                event.target.reset();
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRestaurants();
         });
+
+        function loadRestaurants() {
+            fetch('/restaurants')
+                .then(response => response.json())
+                .then(data => {
+                    const restaurantList = document.getElementById('restaurants');
+                    restaurantList.innerHTML = '';
+                    data.forEach(restaurant => {
+                        const li = document.createElement('li');
+                        li.textContent = `${restaurant.Name} - ${restaurant.Location}`;
+                        li.addEventListener('click', () => {
+                            loadRestaurantDetails(restaurant.RestaurantID);
+                        });
+                        restaurantList.appendChild(li);
+                    });
+                });
+        }
+
+        function loadRestaurantDetails(restaurantId) {
+            fetch(`/restaurant/${restaurantId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const restaurantDetails = document.getElementById('restaurantDetails');
+                    const restaurantInfo = document.getElementById('restaurantInfo');
+                    const menuList = document.getElementById('menuList');
+                    restaurantInfo.textContent = `Name: ${data.restaurant.Name}, Location: ${data.restaurant.Location}, Opening Hours: ${data.restaurant.OpeningHours}, Contact Info: ${data.restaurant.ContactInfo}`;
+                    menuList.innerHTML = '';
+                    data.menus.forEach(menu => {
+                        const li = document.createElement('li');
+                        const avgRating = menu.average_rating ? menu.average_rating.toFixed(2) : 'No ratings yet';
+                        li.textContent = `${menu.Name} - ${menu.Price} - ${menu.Description} - Average Rating: ${avgRating}`;
+                        li.addEventListener('click', () => {
+                            loadMenuDetails(menu.MenuID);
+                        });
+                        menuList.appendChild(li);
+                    });
+                    restaurantDetails.style.display = 'block';
+                });
+        }
+
+        function loadMenuDetails(menuId) {
+            fetch(`/menu/${menuId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const menuDetails = document.getElementById('menuDetails');
+                    const menuInfo = document.getElementById('menuInfo');
+                    const reviewsList = document.getElementById('reviewsList');
+                    const menuIDInput = document.getElementById('menuID');
+                    menuInfo.textContent = `Name: ${data.menu.Name}, Price: ${data.menu.Price}, Description: ${data.menu.Description}, Category: ${data.menu.Category}`;
+                    menuIDInput.value = data.menu.MenuID;
+                    reviewsList.innerHTML = '';
+                    data.reviews.forEach(review => {
+                        const li = document.createElement('li');
+                        li.textContent = `Rating: ${review.Rating} - ${review.ReviewText} - Date: ${review.ReviewDate}`;
+                        reviewsList.appendChild(li);
+                    });
+                    menuDetails.style.display = 'block';
+                });
+        }
 
         document.getElementById('addReviewForm').addEventListener('submit', function(event) {
             event.preventDefault();
@@ -90,48 +125,11 @@
             .then(data => {
                 console.log('Success:', data);
                 event.target.reset();
+                loadMenuDetails(data.MenuID);
             })
             .catch((error) => {
                 console.error('Error:', error);
             });
-        });
-
-        function loadRestaurants() {
-            fetch('/restaurants')
-                .then(response => response.json())
-                .then(data => {
-                    const restaurantList = document.getElementById('restaurants');
-                    restaurantList.innerHTML = '';
-                    data.forEach(restaurant => {
-                        const li = document.createElement('li');
-                        li.textContent = `${restaurant.Name} - ${restaurant.Location}`;
-                        const deleteButton = document.createElement('button');
-                        deleteButton.textContent = 'Delete';
-                        deleteButton.addEventListener('click', () => {
-                            deleteRestaurant(restaurant.RestaurantID);
-                        });
-                        li.appendChild(deleteButton);
-                        restaurantList.appendChild(li);
-                    });
-                });
-        }
-
-        function deleteRestaurant(restaurantId) {
-            fetch(`/delete_restaurant/${restaurantId}`, {
-                method: 'DELETE'
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Success:', data);
-                loadRestaurants();
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            loadRestaurants();
         });
     </script>
 </body>

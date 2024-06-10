@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request, render_template, redirect, url_for, session
 from models import db, Restaurant, Menu, User, Review, TodayMenu
-import datetime
+from datetime import datetime
+from sqlalchemy.sql import func
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.sqlite'
@@ -66,27 +67,33 @@ def get_restaurants():
     restaurants = Restaurant.query.all()
     return jsonify([restaurant.as_dict() for restaurant in restaurants])
 
-@app.route('/add_restaurant', methods=['POST'])
-def add_restaurant():
-    data = request.json
-    new_restaurant = Restaurant(
-        Name=data['Name'],
-        Location=data['Location'],
-        OpeningHours=data['OpeningHours'],
-        ContactInfo=data['ContactInfo']
-    )
-    db.session.add(new_restaurant)
-    db.session.commit()
-    return jsonify(new_restaurant.as_dict()), 201
-
-@app.route('/delete_restaurant/<int:restaurant_id>', methods=['DELETE'])
-def delete_restaurant(restaurant_id):
+@app.route('/restaurant/<int:restaurant_id>', methods=['GET'])
+def get_restaurant_details(restaurant_id):
     restaurant = Restaurant.query.get(restaurant_id)
-    if restaurant is None:
+    if not restaurant:
         return jsonify({'error': 'Restaurant not found'}), 404
-    db.session.delete(restaurant)
-    db.session.commit()
-    return jsonify({'message': 'Restaurant deleted successfully'}), 200
+    
+    menus = Menu.query.filter_by(RestaurantID=restaurant_id).all()
+    for menu in menus:
+        average_rating = db.session.query(func.avg(Review.Rating)).filter(Review.MenuID == menu.MenuID).scalar()
+        menu.average_rating = average_rating
+
+    return jsonify({
+        'restaurant': restaurant.as_dict(),
+        'menus': [menu.as_dict() | {'average_rating': menu.average_rating} for menu in menus]
+    })
+
+@app.route('/menu/<int:menu_id>', methods=['GET'])
+def get_menu_details(menu_id):
+    menu = Menu.query.get(menu_id)
+    if not menu:
+        return jsonify({'error': 'Menu not found'}), 404
+    
+    reviews = Review.query.filter_by(MenuID=menu_id).all()
+    return jsonify({
+        'menu': menu.as_dict(),
+        'reviews': [review.as_dict() for review in reviews]
+    })
 
 @app.route('/add_review', methods=['POST'])
 def add_review():
