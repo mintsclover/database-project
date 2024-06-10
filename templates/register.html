@@ -4,18 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h1>Register</h1>
-    <form action="{{ url_for('register') }}" method="POST">
-        <label for="id">ID:</label>
-        <input type="text" id="id" name="id" required><br>
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" required><br>
-        <label for="preferred_category">Preferred Category:</label>
-        <input type="text" id="preferred_category" name="preferred_category"><br>
-        <button type="submit">Register</button>
-    </form>
-    <a href="{{ url_for('login') }}">Login</a>
+    <header>
+        <h1>Register</h1>
+    </header>
+
+    <main>
+        <form action="{{ url_for('register') }}" method="POST" class="form-container">
+            <label for="id">ID:</label>
+            <input type="text" id="id" name="id" required><br>
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required><br>
+            <label for="preferred_category">Preferred Category:</label>
+            <input type="text" id="preferred_category" name="preferred_category"><br>
+            <button type="submit" class="btn">Register</button>
+        </form>
+        <a href="{{ url_for('login') }}" class="btn">Login</a>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Food Recommendation System</p>
+    </footer>
 </body>
 </html>

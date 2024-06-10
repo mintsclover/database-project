@@ -7,51 +7,63 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h1>Food Recommendation System</h1>
-    {% if user %}
-        <p>Welcome, {{ user.Name }}!</p>
-        <a href="{{ url_for('logout') }}">Logout</a>
-    {% else %}
-        <a href="{{ url_for('login') }}">Login</a>
-        <a href="{{ url_for('register') }}">Register</a>
-    {% endif %}
-    
-    <h2>Today's Menu Recommendation</h2>
-    <p id="todayMenu"></p>
-    <button onclick="loadTodayMenu()">Get Today's Menu</button>
-    
-    <h2>Restaurant List</h2>
-    <ul id="restaurants"></ul>
+    <header>
+        <h1>Food Recommendation System</h1>
+        {% if user %}
+            <p>Welcome, {{ user.Name }}!</p>
+            <a href="{{ url_for('logout') }}" class="btn">Logout</a>
+        {% else %}
+            <a href="{{ url_for('login') }}" class="btn">Login</a>
+            <a href="{{ url_for('register') }}" class="btn">Register</a>
+        {% endif %}
+    </header>
 
-    <div id="restaurantDetails" style="display:none;">
-        <h2>Restaurant Details</h2>
-        <p id="restaurantInfo"></p>
-        <h3>Menu</h3>
-        <ul id="menuList"></ul>
-    </div>
+    <main>
+        <section>
+            <h2>Today's Menu Recommendation</h2>
+            <p id="todayMenu"></p>
+            <button class="btn" onclick="loadTodayMenu()">Get Today's Menu</button>
+        </section>
 
-    <div id="menuDetails" style="display:none;">
-        <h3>Menu Details</h3>
-        <p id="menuInfo"></p>
-        <h4>Reviews</h4>
-        <ul id="reviewsList"></ul>
-        <h4>Add Review</h4>
-        <form id="addReviewForm">
-            <input type="hidden" id="menuID" name="menuID">
-            <label for="rating">Rating:</label>
-            <input id="rating" type="range" name="rating" min="1" max="5" list="tickmarks" required>
-            <datalist id="tickmarks">
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-            </datalist><br>
-            <label for="reviewText">Review Text:</label>
-            <textarea id="reviewText" name="reviewText" required></textarea><br>
-            <button type="submit">Add Review</button>
-        </form>
-    </div>
+        <section>
+            <h2>Restaurant List</h2>
+            <ul id="restaurants"></ul>
+        </section>
+
+        <section id="restaurantDetails" class="hidden">
+            <h2>Restaurant Details</h2>
+            <p id="restaurantInfo"></p>
+            <h3>Menu</h3>
+            <ul id="menuList"></ul>
+        </section>
+
+        <section id="menuDetails" class="hidden">
+            <h3>Menu Details</h3>
+            <p id="menuInfo"></p>
+            <h4>Reviews</h4>
+            <ul id="reviewsList"></ul>
+            <h4>Add Review</h4>
+            <form id="addReviewForm">
+                <input type="hidden" id="menuID" name="menuID">
+                <label for="rating">Rating:</label>
+                <input id="rating" type="range" name="rating" min="1" max="5" list="tickmarks" required>
+                <datalist id="tickmarks">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </datalist><br>
+                <label for="reviewText">Review Text:</label>
+                <textarea id="reviewText" name="reviewText" required></textarea><br>
+                <button type="submit" class="btn">Add Review</button>
+            </form>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Food Recommendation System</p>
+    </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -67,6 +79,7 @@
                     data.forEach(restaurant => {
                         const li = document.createElement('li');
                         li.textContent = `${restaurant.Name} - ${restaurant.Location}`;
+                        li.classList.add('clickable');
                         li.addEventListener('click', () => {
                             loadRestaurantDetails(restaurant.RestaurantID);
                         });
@@ -88,12 +101,13 @@
                         const li = document.createElement('li');
                         const avgRating = menu.average_rating ? menu.average_rating.toFixed(2) : 'No ratings yet';
                         li.textContent = `${menu.Name} - ${menu.Price} - ${menu.Description} - Average Rating: ${avgRating}`;
+                        li.classList.add('clickable');
                         li.addEventListener('click', () => {
                             loadMenuDetails(menu.MenuID);
                         });
                         menuList.appendChild(li);
                     });
-                    restaurantDetails.style.display = 'block';
+                    restaurantDetails.classList.remove('hidden');
                 });
         }
 
@@ -112,7 +126,7 @@
                         reviewsList.appendChild(li);
                     });
                     document.getElementById('menuID').value = data.menu.MenuID;
-                    menuDetails.style.display = 'block';
+                    menuDetails.classList.remove('hidden');
                 });
         }
 
