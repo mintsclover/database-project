@@ -14,10 +14,14 @@
 
 제작 기간(period): 2024/6/1 ~ 2024/6/10
 
-## 사용 방법 | How to Use
+## 사용법 | How to Use
 
 로컬 서버 실행 방법:<br>
 터미널에서 cd로 backend 폴더에 가서<br>
 pip install -r requirements.txt(초기 설정) 이후<br>
 set FLASK_APP=app.py<br>
 flask run
+
+# 기타 자료 | Others
+ERD
+![database-project-er drawio](https://github.com/kevalsil/database-project/assets/150813710/eb108c01-492a-49a5-b1d0-878837d73e80)
